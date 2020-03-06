@@ -96,7 +96,10 @@ Function global:ruConnect() {
 
     # to Teams  
     Connect-MicrosoftTeams -credential $credential
-    # to Skype for Buisness Online  
+    
+    # to Skype for Business Online  
+    # need to install Skype for Business Online PowerShell Module
+    # https://docs.microsoft.com/ja-jp/skypeforbusiness/set-up-your-computer-for-windows-powershell/download-and-install-the-skype-for-business-online-connector
     $sfbsession = New-CsOnlineSession -Credential $credential –OverrideAdminDomain $domain
     Import-PSSession $sfbsession -AllowClobber
 
