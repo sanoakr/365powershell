@@ -103,10 +103,10 @@ Function global:ruConnect() {
     # to Teams
     #TeamsChoice
     Connect-MicrosoftTeams -credential $credential
-
     # to Skype for Buisness Online  
     # Skype Online Connector # https://www.microsoft.com/en-us/download/confirmation.aspx?id=39366
     Import-Module SkypeOnlineConnector
+
     $sfbsession = New-CsOnlineSession -Credential $credential –OverrideAdminDomain $domain
     Import-PSSession $sfbsession -AllowClobber
 
