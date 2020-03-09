@@ -32,6 +32,9 @@ Function global:ynChoice() {
 
 ## セットアップ
 Function global:ruInit() {
+    # disable module autoloading
+    #$PSModuleAutoloadingPreference = “none”
+
     # AzureAD
     Install-Module -Name AzureAD -Repository PSGallery
 
@@ -40,12 +43,13 @@ Function global:ruInit() {
     # Beta release Gallery
     Register-PSRepository -Name PSGalleryInt -SourceLocation https://www.poshtestgallery.com/ -InstallationPolicy Trusted
 
-    # Install Teams Modules 
-    Install-Module -Name MicrosoftTeams -RequiredVersion 0.9.6 -Repository PSGallery -Force #-Scope CurrentUser 
+    # Install Teams Modules
+    #global:TeamsChoice 
+    #Install-Module -Name MicrosoftTeams -RequiredVersion 0.9.6 -Repository PSGallery -Force #-Scope CurrentUser 
     #Install-Module -Name MicrosoftTeams -Repository PSGallery -Force #-Scope CurrentUser #-RequiredVersion 1.0.3
-    Install-Module -Name MicrosoftTeams -Repository PSGalleryInt -Force #-Scope CurrentUser #-RequiredVersion 1.0.21
+    #Install-Module -Name MicrosoftTeams -Repository PSGalleryInt -Force #-Scope CurrentUser #-RequiredVersion 1.0.21
 
-    Get-InstalledModule -Name MicrosoftTeams -AllVersions
+    #Get-InstalledModule -Name MicrosoftTeams -AllVersions
 }
 
 Function global:TeamsChoice() {
@@ -68,19 +72,21 @@ Function global:TeamsChoice() {
     switch ($ans) {
         0 {
             Write-Output $preview.helpmessage
+            Install-Module -Name MicrosoftTeams -RequiredVersion 0.9.6 -Repository PSGallery 
             Import-Module -Name MicrosoftTeams -RequiredVersion 0.9.6
         }
         1 {
             Write-Output $current.helpmessage
+            Install-Module -Name MicrosoftTeams -RequiredVersion 1.0.3 -Repository PSGallery 
             Import-Module -Name MicrosoftTeams -RequiredVersion 1.0.3
         }
         2 {
             Write-Output $beta.helpmessage
+            Install-Module -Name MicrosoftTeams -RequiredVersion 1.0.21 -Repository PSGalleryInt
             Import-Module -Name MicrosoftTeams -RequiredVersion 1.0.21
         }
         default { Write-Opuput "Not matched." }
     }
-
     Get-InstalledModule -Name MicrosoftTeams
 }
 
@@ -97,11 +103,11 @@ Function global:ruConnect() {
 
     # to AzureAD  
     #Connect-MsolService  #ver.1
-    Install-Module -Name "AzureAD"
+    Install-Module -Name "AzureAD" -Repository PSGallery
     Connect-AzureAD -Credential $credential
 
     # to Teams
-    #TeamsChoice
+    TeamsChoice
     Connect-MicrosoftTeams -credential $credential
     # to Skype for Buisness Online  
     # Skype Online Connector # https://www.microsoft.com/en-us/download/confirmation.aspx?id=39366
@@ -123,11 +129,11 @@ Function global:ruNew-ClassTeam() {
     # Teams Preview Module
     $tmodule = "MicrosoftTeams"
     $m = isModuleAvailable -Module $tmodule
-    #if ($m.Version.Major -ne 0 ) {
+    if ($m.Version.Major -ne 0 ) {
         Get-Module -Name $tmodule
         Write-Output "科目チーム作成には $tmodule Preview Version < 1.0 が必要です。"
-    #    return
-    #}
+        return
+    }
     
     $gName = "科目_$Name"
     if (ynChoice("科目チーム「$gName」を新規作成します。") -eq 0) {
@@ -176,7 +182,7 @@ Function global:ruAdd-ChanelUser-byUid() {
         [Parameter(mandatory)][String]$UidString,
         [Parameter(mandatory)][String]$ExtString,
         [Parameter(mandatory)][String]$ChannelName,
-        [ValidateSet("Member","Owner")][String]$Role = "Member"
+        [Switch]$toOwner
     )
 
     $attribute = "extension_875d2e3d99b34cab947ebf6419397ca4_extensionAttribute1"
@@ -199,8 +205,13 @@ Function global:ruAdd-ChanelUser-byUid() {
 
     if (ynChoice("$uLen ユーザーを「$tname」チーム「$ChannelName」チャネルに追加します。") -eq 0) {
         foreach ($u in $c_users) {
-            # Display ONLY
-            Write-Oputpt "Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $u.UserPrincipalName"
+            $uname = $u.UserPrincipalName
+            Write-Output "Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname"
+            Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname
+            if ($toOWner) {
+                Write-Output "$uname to OWner"
+                Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname -Role OWner
+            }
         }
         Write-Output "Done"
     }
