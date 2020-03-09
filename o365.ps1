@@ -239,6 +239,50 @@ Function global:ruAdd-TeamUser-fromSecurityGroup() {
             }
         }
     }
-    
-    echo $365group.GroupId   
 }
+
+# アドレスリストとABPを更新
+Function global:ruUpdate-AddressListABP() {
+
+    $StAddressList = "All St-Student"
+    if (ynChoice("アドレスリスト「$StAddressList」を更新します。") -eq 0) {
+        Remove-AddressList -Identity $StAddressList -Confirm
+        New-AddressList -name $StAddressList -RecipientFilter "((RecipientType -eq 'UserMailbox' -and (Office -like 'T0*' -or Office -like 'T1*' -or Office -like 'T2*')))"
+    }
+    $StaffAddressList = "All Staff"
+    if (ynChoice("アドレスリスト「$StaffAddressList」を更新します。") -eq 0) {
+        Remove-AddressList -Identity $StaffAddressList -Confirm
+        New-AddressList -name $StaffAddressList -RecipientFilter "((RecipientType -eq 'UserMailbox' -and (Office -like '0*' -or Office -like '1*' -or Office -like '2*' -or Office -like '3*' -or Office -like '4*' -or Office -like '5*' -or Office -like '6*' -or Office -like '7*' -or Office -like '8*' -or Office -like '9*')))"
+    }
+
+    if (Get-TransportConfig | Format-List AddressBookPolicyRoutingEnabled) {
+        $StaffGAL = "GAL_STAFF"
+        if (ynChoice("グローバルアドレスリスト「$StaffGAL」を更新します。") -eq 0) {
+            Remove-GlobalAddressList -Identity $StaffGAL -Confirm
+            New-GlobalAddressList -Name $StaffGAL -RecipientFilter {(Office -like '0*' -or Office -like '1*' -or Office -like '2*' -or Office -like '3*' -or Office -like '4*' -or Office -like '5*' -or Office -like '6*' -or Office -like '7*' -or Office -like '8*' -or Office -like '9*')}
+        }
+        $gal = "GAL_STAFF" 
+        $oab = "OfflineList" 
+        $room = "RoomList" 
+        $StudentABP = "Student_ABP"
+        if (ynChoice("アドレスブックポリシー「$StudentABP」を更新します。") -eq 0) {
+            Remove-AddressBookPolicy -Identity $StudentABP
+            New-AddressBookPolicy -Name $StudentABP -Addresslists $StaffAddressList -OfflineAddressBook $oab -GlobalAddressList $gal -RoomList $room
+        }
+
+        if (ynChoice("ユーザーのアドレスブックポリシーとGALを更新します。") -eq 0) {
+            Write-Output "Set ABP" 
+            $stbox = Get-Mailbox -ResultSize unlimited -Filter {Office -like 'T0*' -or Office -like 'T1*' -or Office -like 'T2*'}
+            $stbox | foreach { Set-Mailbox -Identity $_.Identity -AddressBookPolicy $StudentABP }
+            Write-Output "Update User GAL" 
+            foreach ($u in @("0*","1*","2*","3*","4*","5*","6*","7*","8*","9*")) {
+                Write-Output "Updating User $u"
+                Get-Recipient -ResultSize unlimited | ? { $_.Office -like $u } | foreach {Update-Recipient -Identity $_.Identity}
+            }
+        }
+
+    } else {
+        Write-Output "AddressBookPolicyRoutingEnabled : False"
+        Write-Output "Do Notihg"
+    }
+} 
