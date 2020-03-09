@@ -217,3 +217,28 @@ Function global:ruAdd-ChanelUser-byUid() {
     }
 }
     
+# Securityグループメンバーを科目チームに追加
+Function global:ruAdd-TeamUser-fromSecurityGroup() {
+    param (
+        [Parameter(mandatory)][String]$SecurityGroupName,
+        [Parameter(mandatory)][String]$LGroupName
+    )
+
+    $sgroup = Get-AzureADGroup -SearchString $SecurityGroupName
+    $365group = Get-Team -DisplayName $LGroupName
+    $365gid = $365group.GroupId
+    
+    $sGroupMembers = (Get-AzureADGroupMember -ObjectId $sgroup.ObjectId -All $true | select UserPrincipalName,UserType)
+    $uLen = $sGroupMembers.length
+
+    if (ynChoice("「$SecurityGroupName」の $uLen ユーザーを「$LGroupName」チームに追加します。") -eq 0) {
+        foreach ($u in $sGroupMembers) {
+            if ($u.UserType -eq "Member") {
+                $uname = $u.UserPrincipalName
+                Add-TeamUser -GroupId $365gid -User $uname
+            }
+        }
+    }
+    
+    echo $365group.GroupId   
+}
