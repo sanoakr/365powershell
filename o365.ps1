@@ -77,8 +77,8 @@ Function global:TeamsChoice() {
         }
         1 {
             Write-Output $current.helpmessage
-            Install-Module -Name MicrosoftTeams -RequiredVersion 1.0.3 -Repository PSGallery 
-            Import-Module -Name MicrosoftTeams -RequiredVersion 1.0.3
+            Install-Module -Name MicrosoftTeams -RequiredVersion 1.0.5 -Repository PSGallery 
+            Import-Module -Name MicrosoftTeams -RequiredVersion 1.0.5
         }
         2 {
             Write-Output $beta.helpmessage
@@ -94,7 +94,7 @@ Function global:TeamsChoice() {
 Function global:ruConnect() {
     Param (
         [parameter(mandatory)][String] $uid,
-        [Parameter(mandatory)][String] $domain #= "ryu365.onmicrosoft.com"
+        [Parameter(mandatory)][String] $domain = "ryu365.onmicrosoft.com"
     )
     # local script 実行許可（リモートは署名付き）
     Set-ExecutionPolicy RemoteSigned
@@ -103,7 +103,7 @@ Function global:ruConnect() {
 
     # to AzureAD  
     #Connect-MsolService  #ver.1
-    Install-Module -Name "AzureAD" -Repository PSGallery
+    #Install-Module -Name "AzureAD" -Repository PSGallery
     Connect-AzureAD -Credential $credential
 
     # to Teams
@@ -124,31 +124,43 @@ Function global:ruConnect() {
 ## 科目チーム
 Function global:ruNew-ClassTeam() {
     Param (
-        [parameter(mandatory)][String] $Name
+        [parameter(mandatory)][String] $ClassName,
+        [parameter(mandatory)][String] $OwnerId
+
     )
     # Teams Preview Module
     $tmodule = "MicrosoftTeams"
-    $m = isModuleAvailable -Module $tmodule
+    $m = Get-Module -Name $tmodule
     if ($m.Version.Major -ne 0 ) {
-        Get-Module -Name $tmodule
+        Write-Output $m
         Write-Output "科目チーム作成には $tmodule Preview Version < 1.0 が必要です。"
         return
     }
-    
-    $gName = "科目_$Name"
+    $owner = Get-AzureADUser -SearchString $OwnerId
+    $ownerName = $owner.DisplayName -replace "　", "" -replace " ",""
+
+    $gName = "科目_${ClassName}_${ownerName}"
     if (ynChoice("科目チーム「$gName」を新規作成します。") -eq 0) {
         $template = "EDU_Class"
-        New-Team -DisplayName $gname -Template $template -Description $gname
+        New-Team -DisplayName $gname -Template $template -Description $gname -Owner $owner.UserPrincipalName
     }
 }
 
-## 課程チーム
+### 課程チーム
+## 理工学部/理工学研究科
 # math-course-s / g-math-course-s / math-course-t
 # electro-course-s
 # mecha-course-s
 # material-course-s
 # info-course-s
 # env-course-s
+## 先端理工学部
+# Y-math-course-s
+# Y-electro-course-s
+# Y-mecha-course-s
+# Y-material-course-s
+# Y-info-course-s
+# Y-env-course-s
 Function global:ruAdd-TeamUser-byExtension() {
     param (
         [Parameter(mandatory)][String]$ExtString,
@@ -176,7 +188,7 @@ Function global:ruAdd-TeamUser-byExtension() {
 }
 
 # 入学年別プライベートチャネル
-Function global:ruAdd-ChanelUser-byUid() {
+Function global:ruAdd-ChannelUser-byUid() {
     param (
         [Parameter(mandatory)][String]$TeamId,
         [Parameter(mandatory)][String]$UidString,
