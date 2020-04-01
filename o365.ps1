@@ -146,21 +146,28 @@ Function global:ruNew-ClassTeam() {
     }
 }
 
-### 課程チーム
+## 課程チーム
 ## 理工学部/理工学研究科
-# math-course-s / g-math-course-s / math-course-t
-# electro-course-s
-# mecha-course-s
-# material-course-s
-# info-course-s
-# env-course-s
-## 先端理工学部
-# Y-math-course-s
-# Y-electro-course-s
-# Y-mecha-course-s
-# Y-material-course-s
-# Y-info-course-s
-# Y-env-course-s
+## math-course-s / g-math-course-s
+# 4da9067a-78d8-4048-93cb-e27cf550263e
+## electro-course-s
+# 89e28aca-8889-4b15-a67d-82eae112aa9f
+## mecha-course-s
+# bf617f28-e8b1-4231-8bbf-0d73a2fcd282
+## material-course-s
+# 5662808f-bf17-4b29-b5f1-71519230cded
+## info-course-s
+# ba461383-dfb6-4eea-b92f-68829a4b7650
+## env-course-s
+# 5523227d-652b-40ed-8d4c-3b885b2761cc
+## 先端理工教員
+# Y-math-course-t
+# Y-electro-course-t
+# Y-mecha-course-t
+# Y-material-course-t
+# Y-info-course-t
+# Y-env-course-t
+# ExtensionAttribute でチームにメンバーを一括登録
 Function global:ruAdd-TeamUser-byExtension() {
     param (
         [Parameter(mandatory)][String]$ExtString,
