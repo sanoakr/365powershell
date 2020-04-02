@@ -194,6 +194,33 @@ Function global:ruAdd-TeamUser-byExtension() {
     }
 }
 
+# ExtensionAttributeでプライベートチャネル登録
+Function global:ruAdd-ChannelUser-byExtension() {
+    param (
+        [Parameter(mandatory)][String]$TeamId,
+        [Parameter(mandatory)][String]$ExtString,
+        [Parameter(mandatory)][String]$ChannelName
+    )
+
+    $attribute = "extension_875d2e3d99b34cab947ebf6419397ca4_extensionAttribute1"
+    $t_users = Get-AzureADUser -All $true -Filter "startswith($attribute,'$ExtString')"
+
+    $uLen = $t_users.length
+    Write-Output "$uLen Users Found"
+
+    $t = Get-Team -GroupId $TeamId
+    $tname = $t.DisplayName
+
+    if (ynChoice("$uLen ユーザーを「$tname」チーム「$ChannelName」チャネルに追加します。") -eq 0) {
+        foreach ($u in $t_users) {
+            $uname = $u.UserPrincipalName
+            #Write-Output "Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname"
+            Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname
+        }
+        Write-Output "Done"
+    }
+}
+
 # 入学年別プライベートチャネル
 Function global:ruAdd-ChannelUser-byUid() {
     param (
