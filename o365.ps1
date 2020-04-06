@@ -33,7 +33,10 @@ Function global:ynChoice() {
 ## セットアップ
 Function global:ruInit() {
     # disable module autoloading
-    #$PSModuleAutoloadingPreference = “none”
+    $PSModuleAutoloadingPreference = “none”
+    
+    # ログインプロンプトをコンソールに
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $true
 
     # AzureAD
     Install-Module -Name AzureAD -Repository PSGallery
@@ -93,9 +96,10 @@ Function global:TeamsChoice() {
 ## 接続
 Function global:ruConnect() {
     Param (
-        [parameter(mandatory)][String] $uid,
-        [Parameter(mandatory)][String] $domain = "ryu365.onmicrosoft.com"
+        [parameter(mandatory)][String] $uid
     )
+    $domain = "ryu365.onmicrosoft.com"
+
     # local script 実行許可（リモートは署名付き）
     Set-ExecutionPolicy RemoteSigned
 
@@ -121,12 +125,35 @@ Function global:ruConnect() {
     import-pssession $session -disablenamechecking -AllowClobber
 }
 
+## 一般チーム
+Function global:ruNew-Team() {
+    Param (
+        [parameter(mandatory)][String] $CharName,
+        [parameter(mandatory)][String] $DisplayName,
+        [parameter(mandatory)][String] $OwnerId
+    )
+    # Teams Current Module
+    $tmodule = "MicrosoftTeams"
+    $m = Get-Module -Name $tmodule
+    if ($m.Version.Major -eq 0 ) {
+        Write-Output $m
+        Write-Output "一般チーム作成には $tmodule Version > 1.0 が必要です。"
+        return
+    }
+    $owner = Get-AzureADUser -SearchString $OwnerId
+    $ownerName = $owner.DisplayName -replace "　", "" -replace " ",""
+
+    if (ynChoice("一般チーム「$DisplayName」を固有ID「$CharName」所有者「$ownerName」で新規作成します。") -eq 0) {
+        $group = New-Team -DisplayName $CharName -MailNickName $CharName -Owner $owner.UserPrincipalName
+        Set-Team -GroupId $group.GroupId -DisplayName $DisplayName
+    }
+}
+
 ## 科目チーム
 Function global:ruNew-ClassTeam() {
     Param (
         [parameter(mandatory)][String] $ClassName,
         [parameter(mandatory)][String] $OwnerId
-
     )
     # Teams Preview Module
     $tmodule = "MicrosoftTeams"
