@@ -58,7 +58,7 @@ Function global:ruInit() {
 Function global:TeamsChoice() {
     #選択肢の作成
     $typename = "System.Management.Automation.Host.ChoiceDescription"
-    $preview = new-object $typename("&Preview","Preview 0.9.6 for Template")
+    $preview = new-object $typename("&Preview","Preview 0.9.10 for Template")
     $current = new-object $typename("&Current","Current version")
     $beta = new-object $typename("&Beta","Beta version for Private Channel")
     
@@ -75,8 +75,8 @@ Function global:TeamsChoice() {
     switch ($ans) {
         0 {
             Write-Output $preview.helpmessage
-            Install-Module -Name MicrosoftTeams -RequiredVersion 0.9.6 -Repository PSGallery 
-            Import-Module -Name MicrosoftTeams -RequiredVersion 0.9.6
+            Install-Module -Name MicrosoftTeams -RequiredVersion 0.9.10 -Repository PSGallery 
+            Import-Module -Name MicrosoftTeams -RequiredVersion 0.9.10
         }
         1 {
             Write-Output $current.helpmessage
