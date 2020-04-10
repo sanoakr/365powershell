@@ -125,9 +125,6 @@ Function global:ruConnect() {
     import-pssession $session -disablenamechecking -AllowClobber
 }
 
-# チーム作成時の共通オプション
-$newTeamOptions = "-AllowGuestCreateUpdateChannels $false -AllowGuestDeleteChannels $false -AllowCreateUpdateChannels $false -AllowDeleteChannels $false -AllowCreateUpdateRemoveTabs $false"
-
 ## 一般チーム
 Function global:ruNew-Team() {
     Param (
@@ -147,7 +144,7 @@ Function global:ruNew-Team() {
     $ownerName = $owner.DisplayName -replace "　", "" -replace " ",""
 
     if (ynChoice("一般チーム「$DisplayName」を固有ID「$CharName」所有者「$ownerName」で新規作成します。") -eq 0) {
-        $group = New-Team -DisplayName $CharName -MailNickName $CharName -Owner $owner.UserPrincipalName $newTeamOptions
+        $group = New-Team -DisplayName $CharName -MailNickName $CharName -Owner $owner.UserPrincipalName -AllowGuestCreateUpdateChannels $false -AllowGuestDeleteChannels $false -AllowCreateUpdateChannels $false -AllowDeleteChannels $false -AllowCreateUpdateRemoveTabs $false
         Set-Team -GroupId $group.GroupId -DisplayName $DisplayName
     }
 }
@@ -172,7 +169,7 @@ Function global:ruNew-ClassTeam() {
     $gName = "科目_${ClassName}_${ownerName}"
     if (ynChoice("科目チーム「$gName」を新規作成します。") -eq 0) {
         $template = "EDU_Class"
-        New-Team -DisplayName $gname -Template $template -Description $gname -Owner $owner.UserPrincipalName $newTeamOptions
+        New-Team -DisplayName $gname -Template $template -Description $gname -Owner $owner.UserPrincipalName
     }
 }
 
