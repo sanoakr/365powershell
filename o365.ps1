@@ -96,10 +96,9 @@ Function global:TeamsChoice() {
 ## 接続
 Function global:ruConnect() {
     Param (
-        [parameter(mandatory)][String] $uid
+        [parameter(mandatory)][String] $uid,
+        [parameter(mandatory)][String] $domain
     )
-    $domain = "ryu365.onmicrosoft.com"
-
     # local script 実行許可（リモートは署名付き）
     Set-ExecutionPolicy RemoteSigned
 
@@ -187,7 +186,7 @@ Function global:ruNew-ClassTeam() {
 # ba461383-dfb6-4eea-b92f-68829a4b7650
 ## env-course-s
 # 5523227d-652b-40ed-8d4c-3b885b2761cc
-## 先端理工教員
+## 先端理工教員（学生は -s ）
 # Y-math-course-t
 # Y-electro-course-t
 # Y-mecha-course-t
