@@ -99,6 +99,9 @@ Function global:ruConnect() {
         [parameter(mandatory)][String] $uid,
         [parameter(mandatory)][String] $domain
     )
+    # ryu365.onmicrosoft.com
+    # ryuu.onmicrosoft.com / office.ryukoku.ac.jp
+
     # local script 実行許可（リモートは署名付き）
     Set-ExecutionPolicy RemoteSigned
 
