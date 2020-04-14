@@ -316,6 +316,43 @@ Function global:ruAdd-TeamUser-fromSecurityGroup() {
     }
 }
 
+## ゲストアカウントを追加
+# コマンド発行ユーザーからの招待になるので管理者で実行するが吉
+Function global:ruAdd-GuestUser() {
+    param (
+        [Parameter(mandatory)][String]$DisplayName,
+        [Parameter(mandatory)][String]$MailAddress,
+        [ValidateSet("Faculty","Student")][String]$Role = "Faculty"
+    )
+    ## ryu365.onmicrosoft.com のテナントID  
+    #$tenantid = 23b65fdf-a4e3-4a19-b03d-12b1d57ad76e
+    #Connect-AzureAD -TenantId $tenantid
+    ## AzureADPreview だと -TenantDomain が使えるらしい  
+ 
+    $invUrl = "https://teams.microsoft.com/"
+ 
+    if (ynChoice("ゲストユーザー $MailAddress を $DisplayName として招待します。") -eq 0) {
+        New-AzureADMSInvitation -InvitedUserDisplayName $DisplayName  -InvitedUserEmailAddress  $MailAddress -InviteRedirectURL $invUrl -SendInvitationMessage $true
+
+        $guest = Get-AzureADUser -Filter "UserType eq 'Guest' and DisplayName eq '$DisplayName'"
+        Set-AzureADUser -ObjectId $guest.ObjectId -UsageLocation "JP"
+        
+        Write-Output "Waiting 5sec..."
+        Start-Sleep -s 5
+
+        $license = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicense
+        if ($Role -eq "Faculty") {
+            $license.SkuId = "94763226-9b3c-4e75-a931-5c89701abe66" # STANDARDWOFFPACK_FACULTY A1
+        } else {
+            $license.SkuId = "314c4481-f395-4525-be8b-2ec4bb1e9d91" # STANDARDWOFFPACK_STUDENT A1       
+        }
+        $LicensesToAssign = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicenses
+        $LicensesToAssign.AddLicenses = $License
+
+        Set-AzureADUserLicense -ObjectId $guest.ObjectId -AssignedLicenses $LicensesToAssign
+    }
+}
+
 # アドレスリストとABPを更新
 Function global:ruUpdate-AddressListABP() {
 
