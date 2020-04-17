@@ -296,17 +296,18 @@ Function global:ruAdd-ChannelUser-byUid() {
 Function global:ruAdd-TeamUser-fromSecurityGroup() {
     param (
         [Parameter(mandatory)][String]$SecurityGroupName,
-        [Parameter(mandatory)][String]$LGroupName
+        [Parameter(mandatory)][String]$ClassName
     )
 
     $sgroup = Get-AzureADGroup -SearchString $SecurityGroupName
-    $365group = Get-Team -DisplayName $LGroupName
+    $365group = Get-Team -DisplayName $ClassName
     $365gid = $365group.GroupId
+    $365name = $365group.DisplayName
     
     $sGroupMembers = (Get-AzureADGroupMember -ObjectId $sgroup.ObjectId -All $true | select UserPrincipalName,UserType)
     $uLen = $sGroupMembers.length
 
-    if (ynChoice("「$SecurityGroupName」の $uLen ユーザーを「$LGroupName」チームに追加します。") -eq 0) {
+    if (ynChoice("「$SecurityGroupName」の $uLen ユーザーを「$365name」チームに追加します。") -eq 0) {
         foreach ($u in $sGroupMembers) {
             if ($u.UserType -eq "Member") {
                 $uname = $u.UserPrincipalName
@@ -369,7 +370,9 @@ Function global:ruUpdate-AddressListABP() {
 
     if (Get-TransportConfig | Format-List AddressBookPolicyRoutingEnabled) {
         $StaffGAL = "GAL_STAFF"
-        if (ynChoice("グローバルアドレスリスト「$StaffGAL」を更新します。") -eq 0) {
+        if (ynChoice("グロー
+        
+        バルアドレスリスト「$StaffGAL」を更新します。") -eq 0) {
             Remove-GlobalAddressList -Identity $StaffGAL -Confirm
             New-GlobalAddressList -Name $StaffGAL -RecipientFilter {(Office -like '0*' -or Office -like '1*' -or Office -like '2*' -or Office -like '3*' -or Office -like '4*' -or Office -like '5*' -or Office -like '6*' -or Office -like '7*' -or Office -like '8*' -or Office -like '9*')}
         }
