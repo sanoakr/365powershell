@@ -75,7 +75,7 @@ Function global:TeamsChoice() {
     switch ($ans) {
         0 {
             Write-Output $preview.helpmessage
-            Install-Module -Name MicrosoftTeams -RequiredVersion 0.9.10 -Repository PSGallery 
+            Install-Module -Name MicrosoftTeams -RequiredVersion 0.9.10 -Repository PSGalleryInt
             Import-Module -Name MicrosoftTeams -RequiredVersion 0.9.10
         }
         1 {
