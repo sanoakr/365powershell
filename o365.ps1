@@ -200,7 +200,7 @@ Function global:ruNew-ClassTeam() {
 Function global:ruAdd-TeamUser-byExtension() {
     param (
         [Parameter(mandatory)][String]$ExtString,
-        [Parameter(mandatory)][String]$GroupId,
+        [Parameter(mandatory)][String]$TeamName,
         [ValidateSet("Member","Owner")][String]$Role = "Member"
     )
 
@@ -212,7 +212,7 @@ Function global:ruAdd-TeamUser-byExtension() {
     $uLen = $users.length
     Write-Output "$uLen Users Found"
 
-    $t = Get-Team -GroupId $GroupId
+    $t = Get-Team -DisplayName $TeamName
     $tname = $t.DisplayName
 
     if (ynChoice("$uLen ユーザーを「$tname」チームに追加します。") -eq 0) {
@@ -226,7 +226,7 @@ Function global:ruAdd-TeamUser-byExtension() {
 # ExtensionAttributeでプライベートチャネル登録
 Function global:ruAdd-ChannelUser-byExtension() {
     param (
-        [Parameter(mandatory)][String]$TeamId,
+        [Parameter(mandatory)][String]$TeamName,
         [Parameter(mandatory)][String]$ExtString,
         [Parameter(mandatory)][String]$ChannelName
     )
@@ -237,14 +237,15 @@ Function global:ruAdd-ChannelUser-byExtension() {
     $uLen = $t_users.length
     Write-Output "$uLen Users Found"
 
-    $t = Get-Team -GroupId $TeamId
+    $t = Get-Team -DisplayName $TeamName
     $tname = $t.DisplayName
+    $tid = $t.GroupId
 
     if (ynChoice("$uLen ユーザーを「$tname」チーム「$ChannelName」チャネルに追加します。") -eq 0) {
         foreach ($u in $t_users) {
             $uname = $u.UserPrincipalName
             #Write-Output "Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname"
-            Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname
+            Add-TeamChannelUser -GroupId $tid -DisplayName $ChannelName -User $uname
         }
         Write-Output "Done"
     }
@@ -253,7 +254,7 @@ Function global:ruAdd-ChannelUser-byExtension() {
 # 入学年別プライベートチャネル
 Function global:ruAdd-ChannelUser-byUid() {
     param (
-        [Parameter(mandatory)][String]$TeamId,
+        [Parameter(mandatory)][String]$TeamName,
         [Parameter(mandatory)][String]$UidString,
         [Parameter(mandatory)][String]$ExtString,
         [Parameter(mandatory)][String]$ChannelName,
@@ -275,17 +276,18 @@ Function global:ruAdd-ChannelUser-byUid() {
     $uLen = $c_users.length
     Write-Output "$uLen Users Found"
 
-    $t = Get-Team -GroupId $TeamId
+    $t = Get-Team -DisplayName $TeamName
     $tname = $t.DisplayName
+    $tid = $t.GroupId
 
     if (ynChoice("$uLen ユーザーを「$tname」チーム「$ChannelName」チャネルに追加します。") -eq 0) {
         foreach ($u in $c_users) {
             $uname = $u.UserPrincipalName
             Write-Output "Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname"
-            Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname
+            Add-TeamChannelUser -GroupId $tid -DisplayName $ChannelName -User $uname
             if ($toOWner) {
                 Write-Output "$uname to OWner"
-                Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname -Role OWner
+                Add-TeamChannelUser -GroupId $tid -DisplayName $ChannelName -User $uname -Role OWner
             }
         }
         Write-Output "Done"
@@ -391,7 +393,7 @@ Function global:ruUpdate-AddressListABP() {
             $stbox | foreach { Set-Mailbox -Identity $_.Identity -AddressBookPolicy $StudentABP }
             Write-Output "Update User GAL" 
             foreach ($u in @("0*","1*","2*","3*","4*","5*","6*","7*","8*","9*")) {
-                Write-Output "Updating User $u"
+                Write-Output "Updating User $u": 
                 Get-Recipient -ResultSize unlimited | ? { $_.Office -like $u } | foreach {Update-Recipient -Identity $_.Identity}
             }
         }
