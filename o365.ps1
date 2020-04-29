@@ -214,10 +214,11 @@ Function global:ruAdd-TeamUser-byExtension() {
 
     $t = Get-Team -DisplayName $TeamName
     $tname = $t.DisplayName
+    $gid = $t.GroupId
 
     if (ynChoice("$uLen ユーザーを「$tname」チームに追加します。") -eq 0) {
         foreach ($u in $users) {
-            Add-TeamUser -GroupID $GroupId -User $u.UserPrincipalName -Role $Role
+            Add-TeamUser -GroupID $gId -User $u.UserPrincipalName -Role $Role
         }
         Write-Output "Done"
     }
