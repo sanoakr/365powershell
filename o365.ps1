@@ -218,7 +218,7 @@ Function global:ruAdd-TeamUser-byExtension() {
 
     if (ynChoice("$uLen ユーザーを「$tname」チームに追加します。") -eq 0) {
         foreach ($u in $users) {
-            Add-TeamUser -GroupID $gId -User $u.UserPrincipalName -Role $Role
+            Add-TeamUser -GroupID $gid -User $u.UserPrincipalName -Role $Role
         }
         Write-Output "Done"
     }
@@ -247,6 +247,44 @@ Function global:ruAdd-ChannelUser-byExtension() {
             $uname = $u.UserPrincipalName
             #Write-Output "Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname"
             Add-TeamChannelUser -GroupId $tid -DisplayName $ChannelName -User $uname
+        }
+        Write-Output "Done"
+    }
+}
+
+# 課程（ExtensionAttribute）別・入学年度別でチームへメンバー追加
+Function global:ruAdd-TeamUser-byUidExtension() {
+    param (
+        [Parameter(mandatory)][String]$TeamName,
+        [Parameter(mandatory)][String]$UidString,
+        [Parameter(mandatory)][String]$ExtString,
+        [ValidateSet("Member","Owner")][String]$Role = "Member"
+    )
+
+    $attribute = "extension_875d2e3d99b34cab947ebf6419397ca4_extensionAttribute1"
+    $t_users = Get-AzureADUser -All $true -Filter "startswith($attribute,'$ExtString')"
+
+    $c_users = @()
+    #$c_users = New-Object System.Collections.ArrayList
+    foreach ( $u in $t_users ) {
+        if ($u.UserPrincipalName.startswith($UidString)) {
+            Write-Output $u.UserPrincipalName
+            $c_users += ($u)
+            #$c_users.Add($u)
+        }
+    }
+    $uLen = $c_users.length
+    Write-Output "$uLen Users Found"
+
+    $t = Get-Team -DisplayName $TeamName
+    $tname = $t.DisplayName
+    $TeamId = $t.GroupId
+
+    if (ynChoice("$uLen ユーザーを「$tname」チームに追加します。") -eq 0) {
+        foreach ($u in $c_users) {
+            $uname = $u.UserPrincipalName
+            Write-Output "Add-TeamChannelUser -GroupId $TeamId -DisplayName $ChannelName -User $uname"
+            Add-TeamUser -GroupID $TeamId -User $u.UserPrincipalName -Role $Role
         }
         Write-Output "Done"
     }
